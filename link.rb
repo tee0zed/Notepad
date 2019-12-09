@@ -1,3 +1,5 @@
+require_relative "post.rb"
+
 class Link < Post 
 
 	def initialize 
@@ -6,9 +8,17 @@ class Link < Post
 	end 
 
 	def read_from_console 
-	end 
+		puts "Введите адрес ссылки"
+		@url = STDIN.gets.chomp 
 
-	def to_strings
-	end 
+		puts "Введите описание ссылки"
+		@text = STDIN.gets.chomp 
+	end
 
+	def to_string 
+
+		time_string = "Создано: #{@time_created.strftime("%c")} \n\r \n\r"
+
+		return [@url, @text, time_string]
+	end 
 end 
