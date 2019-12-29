@@ -1,4 +1,5 @@
 require_relative "post.rb"
+require 'sqlite3'
 
 class Link < Post 
 
@@ -20,5 +21,15 @@ class Link < Post
 		time_string = "Создано: #{@time_created.strftime("%c")} \n\r \n\r"
 
 		return [@url, @text, time_string]
-	end 
+	end
+
+	def db_to_hash
+		return super.merge (
+													 {
+'text' => @text,
+'url' => @url
+													 }
+											 )
+	end
+
 end 
