@@ -1,3 +1,4 @@
+require 'byebug'
 class Post
 
   def self.post_types
@@ -13,6 +14,8 @@ class Post
     @text = nil
   end
 
+  def to_strings
+  end
 
   def save
     file = File.new(file_path, 'w:UTF-8')
@@ -44,11 +47,52 @@ class Post
             ')',
         db_to_hash.values
     )
-
-
     db.close
-
   end
+
+  def self.find(limit, type, id)
+    db = SQLite3::Database.open('./Notepad.db')
+    unless id.nil?
+      db.results_as_hash = true
+
+      result = db.execute("SELECT * FROM posts WHERE rowid = ?", id)
+
+      db.close
+
+      if result.empty?
+        puts "ID #{id} does not exists."
+        return nil
+      else
+
+        post = create(result.first["type"])
+
+        post.load_data(result.first)
+
+        return post
+      end
+    else
+      db.results_as_hash = false
+
+      query = "SELECT rowid, * FROM Posts "
+
+      query += "WHERE type = :type " unless type.nil?
+      query += "ORDER by rowid DESC "
+      query += "LIMIT :limit " unless limit.nil?
+
+      statement = db.prepare(query)
+
+      statement.bind_param('type', type) unless type.nil?
+      statement.bind_param('limit', limit) unless limit.nil?
+
+
+      return statement.execute!
+
+      statement.close
+      db.close
+
+    end
+  end
+
 
   def db_to_hash
     {
@@ -57,4 +101,10 @@ class Post
 
     }
   end
+
+  def load_data(data_hash)
+    @time_created = Time.parse(data_hash['created_at'])
+  end
+
 end
+
