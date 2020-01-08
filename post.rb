@@ -50,48 +50,49 @@ class Post
     db.close
   end
 
-  def self.find(limit, type, id)
+  def self.find(id)
     db = SQLite3::Database.open('./Notepad.db')
-    unless id.nil?
-      db.results_as_hash = true
 
-      result = db.execute("SELECT * FROM posts WHERE rowid = ?", id)
+    db.results_as_hash = true
 
-      db.close
+    result = db.execute("SELECT * FROM posts WHERE rowid = ?", id)
 
-      if result.empty?
-        puts "ID #{id} does not exists."
-        return nil
-      else
+    db.close
 
-        post = create(result.first["type"])
-
-        post.load_data(result.first)
-
-        return post
-      end
+    if result.empty?
+      puts "ID #{id} does not exists."
+      return nil
     else
-      db.results_as_hash = false
 
-      query = "SELECT rowid, * FROM Posts "
+      post = create(result.first["type"])
 
-      query += "WHERE type = :type " unless type.nil?
-      query += "ORDER by rowid DESC "
-      query += "LIMIT :limit " unless limit.nil?
+      post.load_data(result.first)
 
-      statement = db.prepare(query)
-
-      statement.bind_param('type', type) unless type.nil?
-      statement.bind_param('limit', limit) unless limit.nil?
-
-
-      return statement.execute!
-
-      statement.close
-      db.close
-
+      return post
     end
   end
+
+  def self.find_all(type, limit)
+    db = SQLite3::Database.open('./Notepad.db')
+    db.results_as_hash = false
+
+    query = "SELECT rowid, * FROM Posts "
+
+    query += "WHERE type = :type " unless type.nil?
+    query += "ORDER by rowid DESC "
+    query += "LIMIT :limit " unless limit.nil?
+
+    statement = db.prepare(query)
+
+    statement.bind_param('type', type) unless type.nil?
+    statement.bind_param('limit', limit) unless limit.nil?
+
+    result = statement.execute!
+    statement.close
+    db.close
+    result
+  end
+
 
 
   def db_to_hash

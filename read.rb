@@ -19,22 +19,24 @@ OptionParser.new do |opt|
   opt.on('--limit NUMBER', 'expresses number of posts to be shown') {|o| options[:limit] = o}
 end.parse!
 
-result = Post.find(options[:limit], options[:type], options[:id])
-
-if result.is_a? Post
-  puts "Post #{result.class.name}, id = #{options[:id]}"
-  result.to_strings.each do |line|
-    puts line
-  end
-elsif result.nil?
+if !options[:id].nil?
+  result = Post.find(options[:id])
+  if result.is_a? Post
+    puts "Post #{result.class.name}, id = #{options[:id]}"
+    result.to_strings.each do |line|
+      puts line
+    end
+  elsif
   nil
-else
-  print "| id\t| @type\t| @created_at\t\t\t| @text\t\t\t| @url\t\t| @due_date \t"
-
+  end
+elsif result = Post.find_all(options[:type], options[:limit])
+  puts "| id\t| @type\t| @created_at\t\t| @text\t\t\t| @url\t\t| @due_date \t"
   result.each do |row|
     puts
     row.each do |element|
+
       print "| #{element.to_s.delete("\\n\\r")[0..20]}\t"
     end
   end
 end
+
